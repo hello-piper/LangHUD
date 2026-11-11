@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# 构建产物
+build/
+dist/
+
+# 签名材料（含私钥，严禁提交）
+signing/
+
+# 编辑器
+.idea/
+*.iml
+
+# 图标中间产物（AppIcon.icns 为成品）
+Resources/AppIcon.iconset/
+
+# 日志 / 调试
+*.log
+*.dSYM/
