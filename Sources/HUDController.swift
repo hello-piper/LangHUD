@@ -87,14 +87,14 @@ extension HUDWindow {
         let visible = screen.visibleFrame
         let size = frame.size
 
-        var x = caret.minX + 5
-        var y = caret.minY - size.height - 12
+        var x = caret.minX + 2
+        var y = caret.minY - size.height - 6
 
         if y < visible.minY + 8 {
-            y = caret.maxY + 8
+            y = caret.maxY + 6
         }
         if x + size.width > visible.maxX - 8 {
-            x = caret.minX - size.width - 5
+            x = caret.minX - size.width - 2
         }
 
         x = min(max(x, visible.minX + 8), visible.maxX - size.width - 8)

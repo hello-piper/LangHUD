@@ -3,7 +3,8 @@ import AppKit
 /// IDEA New UI Dark 配色
 enum IDEATheme {
     static let background = NSColor(srgbRed: 0.169, green: 0.176, blue: 0.188, alpha: 1) // #2B2D30
-    static let border = NSColor(srgbRed: 0.263, green: 0.271, blue: 0.290, alpha: 1)     // #43454A
+    /// 深色背景上勾出气泡轮廓；浅色背景上只是一层很淡的灰，不刺眼
+    static let border = NSColor.white.withAlphaComponent(0.28)
     static let glyph = NSColor(srgbRed: 0.875, green: 0.882, blue: 0.898, alpha: 1)      // #DFE1E5
 }
 
@@ -39,6 +40,7 @@ final class HUDWindow: NSPanel {
     static let contentSize = NSSize(width: 36, height: 36)
 
     private let containerView = NSView()
+    private let effectView = NSVisualEffectView()
     private let glyphView = GlyphView()
 
     init() {
@@ -75,20 +77,28 @@ final class HUDWindow: NSPanel {
         try? data.write(to: URL(fileURLWithPath: path))
     }
 
-    // step1 IDEA Dark 纯色圆角背景
-    // step2 主字符（中 / 英）
+    // step1 圆角裁剪容器 + 1px 描边
+    // step2 毛玻璃材质（系统 HUD 风格，模糊背后内容）
+    // step3 主字符（中 / En）
     private func setupContent() {
         containerView.frame = NSRect(origin: .zero, size: Self.contentSize)
         containerView.wantsLayer = true
-        containerView.layer?.backgroundColor = IDEATheme.background.cgColor
         containerView.layer?.cornerRadius = 5
         containerView.layer?.cornerCurve = .continuous
+        containerView.layer?.masksToBounds = true
         containerView.layer?.borderWidth = 1
         containerView.layer?.borderColor = IDEATheme.border.cgColor
         containerView.autoresizingMask = [.width, .height]
         contentView = containerView
 
-        glyphView.frame = NSRect(origin: .zero, size: Self.contentSize)
+        effectView.frame = containerView.bounds
+        effectView.material = .hudWindow
+        effectView.blendingMode = .behindWindow
+        effectView.state = .active
+        effectView.autoresizingMask = [.width, .height]
+        containerView.addSubview(effectView)
+
+        glyphView.frame = containerView.bounds
         glyphView.font = .systemFont(ofSize: 20, weight: .medium)
         glyphView.textColor = IDEATheme.glyph
         glyphView.autoresizingMask = [.width, .height]
