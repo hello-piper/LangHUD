@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let focusMonitor = FocusMonitor()
     private let coordinator = TriggerCoordinator()
     private let statusBar = StatusBarController()
+    private let settingsWindow = SettingsWindowController()
     private let inputSourceMemory = InputSourceMemory()
     /// 上一次收到的输入法 ID，用于过滤「输入法没变但系统仍发通知」的假事件
     private var lastInputSourceID: String?
@@ -15,10 +16,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         UserDefaults.standard.set(focusMonitor.isTrusted, forKey: "axTrusted")
         lastInputSourceID = InputSourceReader.current().id
 
-        // step1 菜单栏
+        // step1 菜单栏 + 设置窗口
         statusBar.onCheckPermission = { [weak self] in self?.focusMonitor.requestTrustIfNeeded() }
+        statusBar.onOpenSettings = { [weak self] in self?.settingsWindow.show() }
         statusBar.onQuit = { NSApp.terminate(nil) }
-        statusBar.setup()
+        settingsWindow.onChange = { [weak self] in
+            guard let self else { return }
+            self.statusBar.setVisible(Settings.showInMenuBar)
+        }
+        if Settings.showInMenuBar {
+            statusBar.setup()
+        }
         statusBar.update(state: InputSourceReader.current())
 
         // step1.1 记录启动时前台应用的输入法，作为它的初始状态
@@ -61,6 +69,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
         }
+    }
+
+    /// 点击 Launchpad / Finder 里的应用图标时打开设置窗口（菜单栏隐藏后仍能唤出）
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        settingsWindow.show()
+        return true
     }
 
     @objc private func handleAppActivated(_ notification: Notification) {
